@@ -1,3 +1,3 @@
-# tuya-mqttv3
-Android mqtt SDK
+# tuyasmart
+Android SDK
 
