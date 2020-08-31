@@ -1,0 +1,109 @@
+apply plugin: 'com.android.library'
+apply plugin: 'upload'
+apply plugin: 'com.jfrog.bintray'
+
+//apply plugin: 'com.novoda.bintray-release'
+//publish {
+//    userOrg = 'tuyainc'
+//    repoName = 'TuyaSmartHome'
+//    groupId = 'com.tuya.smart'
+//    artifactId = 'tuyasmart-libtestsuit'
+//    publishVersion = '1.0.1.2-beta'
+//    desc = 'Android Device IoT SDK'
+//    bintrayUser = 'tuyainc'
+//    bintrayKey = '106244ead3406fba0a2e80d77f37825a9d43b371'
+//    dryRun = false
+//}
+
+//./gradlew libtestsuit:bintrayUpload -PuserName=tuya -Ppassword=tuya%123.qaz
+upInfo {
+    userName = "tuya"
+    password = "tuya%123.qaz"
+    version = "1.0.1"
+    artifactId = "tuyasmart-libtestsuit"
+    groupId = "com.tuya.smart"
+    hasPomDepend = false
+}
+
+version = upInfo.version
+group = upInfo.groupId
+
+//配置bintray参数
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
+bintray {
+    user = properties.getProperty("bintrayUser") ?: System.getenv('BINTRAY_USER')
+    key = properties.getProperty("bintrayApiKey") ?: System.getenv('BINTRAY_API_KEY')
+    publications = ['OtherMavenAndroid'] // upload插件中publication名称
+    override = true
+    pkg {
+        repo = "TuyaSmartHome"
+        name = upInfo.artifactId
+        licenses = ["Apache-2.0"]
+        publish = true
+        version {
+            released = new Date()
+        }
+    }
+}
+
+android {
+    compileSdkVersion 28
+    buildToolsVersion "28.0.3"
+
+
+    defaultConfig {
+        minSdkVersion 19
+        targetSdkVersion 28
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles 'consumer-rules.pro'
+
+        externalNativeBuild {
+            cmake {
+                arguments '-DANDROID_STL=c++_shared'
+            }
+        }
+        ndk {
+            abiFilters 'armeabi-v7a', 'arm64-v8a'
+            //armeabi-v7a arm64-v8a x86 x86_64
+        }
+    }
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['../libgateway/libs']
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path "src/main/cpp/CMakeLists.txt"
+        }
+    }
+}
+
+repositories {
+    flatDir {
+        dirs '../libgateway/libs'
+    }
+    mavenCentral()
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+}
+
+
